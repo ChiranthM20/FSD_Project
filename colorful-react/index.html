@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E-Commerce store</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { font-family: 'Poppins', sans-serif; }
+    .category-box {
+        border-radius: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .category-box:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+    }
+    .cart-overlay {
+        position: fixed; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: white; z-index: 50;
+        display: none; flex-direction: column;
+        padding: 20px;
+    }
+</style>
+</head>
+<body class="bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 min-h-screen">
+
+<!-- Navbar -->
+<nav class="bg-blue-500 p-4 flex justify-center">
+    <h1 class="text-white text-xl font-bold">E-commerce store</h1>
+    <button onclick="openCart()" class="bg-white text-pink-500 px-4 py-2 rounded-full shadow hover:bg-pink-100 transition">
+        🛒 Cart (<span id="cart-count">0</span>)
+    </button>
+</nav>
+
+<!-- Categories -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+    <div onclick="showCategory('clothing')" class="category-box bg-gradient-to-tr from-yellow-300 to-orange-400 p-6 text-center text-xl font-bold cursor-pointer">
+        👕 Clothing
+    </div>
+    <div onclick="showCategory('shoes')" class="category-box bg-gradient-to-tr from-blue-300 to-blue-500 p-6 text-center text-xl font-bold cursor-pointer">
+        👟 Shoes
+    </div>
+    <div onclick="showCategory('gadgets')" class="category-box bg-gradient-to-tr from-green-300 to-green-500 p-6 text-center text-xl font-bold cursor-pointer">
+        📱 Gadgets
+    </div>
+</div>
+
+<!-- Products -->
+<div id="products" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 p-6"></div>
+
+<!-- Cart -->
+<div id="cart-overlay" class="cart-overlay">
+    <button onclick="closeCart()" class="mb-4 bg-red-500 text-white px-4 py-2 rounded">Close Cart</button>
+    <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+    <div id="cart-items" class="flex flex-col gap-4 overflow-y-auto"></div>
+
+    <!-- Book Now Button -->
+    <button onclick="bookProducts()" 
+        class="mt-4 bg-green-500 text-white px-6 py-3 rounded-full shadow hover:bg-green-600 transition">
+        ✅ Book Now
+    </button>
+</div>
+
+<script>
+const productsData = {
+    clothing: [
+        { name: "T-Shirt", price: 500, img: "public/images/cloth1.jpeg" },
+        { name: "Jacket", price: 1200, img: "public/images/cloth2.jpeg" },
+        { name: "Printed Hoodie", price: 2000, img: "public/images/cloth3.jpeg" },
+        { name: "Jeans", price: 800, img: "public/images/cloth4.jpeg" },
+        { name: "Shirt", price: 1500, img: "public/images/cloth5.jpeg" },
+        { name: "Pant", price: 1700, img: "public/images/cloth6.jpeg" },
+        { name: "Track suit", price: 2500, img: "public/images/cloth7.jpeg" },
+        { name: "Blazer", price: 700, img: "public/images/cloth8.jpeg" }
+    ],
+    shoes: [
+        { name: "Nike Air Force", price: 1500, img: "public/images/shoes1.jpeg" },
+        { name: "Adidas Run", price: 2000, img: "public/images/shoes2.jpeg" },
+        { name: "Puma Classic", price: 1800, img: "public/images/shoes3.jpeg" },
+        { name: "Reebok Flex", price: 2500, img: "public/images/shoes4.jpeg" },
+        { name: "Skechers", price: 900, img: "public/images/shoes5.jpeg" },
+        { name: "Campus Max", price: 400, img: "public/images/shoes6.jpeg" },
+        { name: "Fila Boost", price: 2200, img: "public/images/shoes7.jpeg" },
+        { name: "Bata Classic", price: 2100, img: "public/images/shoes8.jpeg" }
+    ],
+    gadgets: [
+        { name: "Speaker", price: 15000, img: "public/images/gadget1.jpeg" },
+        { name: "Smart watch", price: 4000, img: "public/images/gadget2.jpeg" },
+        { name: "EarBuds", price: 2000, img: "public/images/gadget3.jpeg" },
+        { name: "Fitness Band", price: 12000, img: "public/images/gadget4.jpeg" },
+        { name: "Tablet", price: 55000, img: "public/images/gadget5.jpeg" },
+        { name: "VR Headset", price: 35000, img: "public/images/gadget6.jpeg" },
+        { name: "Wireless charger", price: 3000, img: "public/images/gadget7.jpeg" },
+        { name: "Gaming mouse", price: 2500, img: "public/images/gadget8.jpeg" }
+    ]
+};
+
+let cart = [];
+
+function showCategory(category) {
+    const productsDiv = document.getElementById('products');
+    productsDiv.innerHTML = "";
+    productsData[category].forEach((product, index) => {
+        const productCard = `
+            <div class="bg-white rounded-xl shadow-lg p-4 flex flex-col items-center transition transform hover:scale-105">
+                <img src="${product.img}" class="w-32 h-32 object-cover rounded-md mb-4" />
+                <h3 class="text-lg font-bold">${product.name}</h3>
+                <p class="text-pink-500 font-semibold">₹${product.price}</p>
+                <button onclick='addToCart(${JSON.stringify(product)})' class="mt-2 bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600">
+                    Add to Cart
+                </button>
+            </div>
+        `;
+        productsDiv.innerHTML += productCard;
+    });
+}
+
+function addToCart(product) {
+    cart.push(product);
+    document.getElementById('cart-count').innerText = cart.length;
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    document.getElementById('cart-count').innerText = cart.length;
+    openCart();
+}
+
+function openCart() {
+    document.getElementById('cart-overlay').style.display = "flex";
+    const cartItemsDiv = document.getElementById('cart-items');
+    cartItemsDiv.innerHTML = "";
+    cart.forEach((item, index) => {
+        cartItemsDiv.innerHTML += `
+            <div class="flex items-center justify-between gap-4 border-b pb-2">
+                <div class="flex items-center gap-4">
+                    <img src="${item.img}" class="w-16 h-16 object-cover rounded" />
+                    <div>
+                        <p class="font-bold">${item.name}</p>
+                        <p class="text-pink-500">₹${item.price}</p>
+                    </div>
+                </div>
+                <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700">❌</button>
+            </div>
+        `;
+    });
+}
+
+
+    
+
+    function closeCart() {
+        document.getElementById('cart-overlay').style.display = "none";
+    }
+
+    function bookProducts() {
+        if (cart.length === 0) {
+            alert("Your cart is empty! Please add products before booking.");
+            return;
+        }
+
+        // Simulate booking process
+        alert(`✅ Booking confirmed for ${cart.length} item(s). Thank you for your purchase!`);
+
+        // Clear cart
+        cart = [];
+        document.getElementById('cart-count').innerText = 0;
+        closeCart();
+    }
+</script>
+
+</script>
+</body>
+</html>
